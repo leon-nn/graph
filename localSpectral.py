@@ -1,9 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Empirical community detection using spectral methods
 Generate NCP plots and more using PageRank Nibble
-Leon Nguyen (A10953601)
 Python 2.7.13
 
 Note that this requires networkx-1.9.1 (there is a bug in reading .gml files in newer versions) and that this was written for Python 2.7
@@ -16,6 +14,7 @@ from collections import deque
 from random import sample
 import matplotlib.pyplot as plt
 import pickle
+import argparse
 
 def vol(G, S):
     """Compute volume of a subset S. For debugging only."""
@@ -182,7 +181,8 @@ def findBestCuts(G, phi, b, title):
                     bestSets[k] = S[:k + 1]
                 bestPhis = np.append(bestPhis, Phi[j:])
             
-            print 'Iteration %d of %d: lowest conductance is %f for community of size %d' % (count + 1, n // 2, np.amin(bestPhis), np.nonzero(bestPhis == np.amin(bestPhis))[0][0] + 1)
+            print 'Iteration %d of %d: lowest conductance is %f for community of size %d' % (count + 1, n // 2, np.amin(bestPhis), np.argmin(bestPhis) + 1)
+            
     except KeyboardInterrupt:
         plotNCP(bestPhis, title)
         return bestPhis, bestSets
@@ -234,11 +234,25 @@ def loadData(phiFname, communitiesFname):
         communities = pickle.load(fd)
     return Phi, communities
 
-# Karate:
-G = nx.read_gml('karate.gml')
+def parseFname(args = None)
+    parser = argparse.ArgumentParser(description = 'Read graph file')
+    parser.add_argument('-f', '--file',
+                        help = 'filename of graph',
+                        required = 'True')
+    parse.add_argument('-p', '--phi',
+                        type = float,
+                        help = 'target conductance for cut',
+                        default = 0.1)
+    results = parser.parse_args(args)
+    return (results.file,
+            results.phi)
+            
+graphFname = 'karate.gml'
+if graphFname.endswith('.gml'):
+    G = nx.read_gml(graphFname)
+elif graphFname.endswith('.txt'):
+    G = nx.read_edgelist(graphFname)
 
-# Facebook:
-#G = nx.read_edgelist('facebook_combined.txt')
 G = nx.convert_node_labels_to_integers(G)
 m = G.number_of_edges()
 
